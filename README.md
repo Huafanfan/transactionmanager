@@ -35,7 +35,7 @@ A Spring Boot based transaction management system that provides RESTful APIs for
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/Huafanfan/transactionmanager.git
 cd transactionmanager
 ```
 

@@ -83,6 +83,7 @@
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
                   <stringProp name="Argument.value">{
+  "id": "${__UUID()}",
   "description": "Load Test Transaction ${__time()}",
   "amount": ${__Random(100,10000)}
 }</stringProp>
@@ -188,6 +189,7 @@ log.info("Extracted Transaction ID: " + vars.get("transactionId"));
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
                   <stringProp name="Argument.value">{
+  "id": "${transactionId}",
   "description": "Modified Transaction ${__time()}",
   "amount": ${__Random(1000,50000)}
 }</stringProp>
@@ -275,6 +277,7 @@ log.info("Using Transaction ID: " + vars.get("transactionId"));
                 <elementProp name="" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">false</boolProp>
                   <stringProp name="Argument.value">{
+  "id": "${__UUID()}",
   "description": "High Concurrency Test ${__threadNum} ${__time()}",
   "amount": ${__Random(1000,100000)}
 }</stringProp>

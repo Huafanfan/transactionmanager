@@ -33,6 +33,9 @@ public class TransactionService {
             throw new RuntimeException("Service is overloaded, please try again later");
         }
         try {
+            // Perform additional validation
+            validateTransaction(transaction);
+            
             if (transaction.getId() == null || transaction.getId().isEmpty()) {
                 transaction.setId(java.util.UUID.randomUUID().toString());
             }
@@ -65,6 +68,9 @@ public class TransactionService {
             throw new RuntimeException("Service is overloaded, please try again later");
         }
         try {
+            // Perform additional validation
+            validateTransaction(modifiedTransaction);
+            
             // computeIfPresent ensures atomicity for the get-and-update operation
             return transactions.computeIfPresent(id, (key, existingTransaction) -> {
                 existingTransaction.setDescription(modifiedTransaction.getDescription());
@@ -100,6 +106,25 @@ public class TransactionService {
 
     public long getTotalTransactions() {
         return transactions.size();
+    }
+
+    // Additional validation method for transaction data
+    private void validateTransaction(Transaction transaction) {
+        if (transaction == null) {
+            throw new IllegalArgumentException("Transaction cannot be null");
+        }
+        
+        if (transaction.getAmount() < 0) {
+            throw new IllegalArgumentException("Transaction amount cannot be negative");
+        }
+        
+        if (transaction.getDescription() == null || transaction.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Transaction description cannot be empty");
+        }
+        
+        if (transaction.getDescription().length() > 255) {
+            throw new IllegalArgumentException("Transaction description cannot exceed 255 characters");
+        }
     }
 
     private boolean acquirePermit() {

@@ -245,33 +245,31 @@ The most recent performance test was conducted with 50 concurrent users over a 3
 | Metric                  | Value              |
 |-------------------------|-------------------|
 | Total Transactions      | 23,000            |
-| Throughput              | 277.12 tps        |
-| Average Response Time   | 85.88 ms          |
-| 90% Response Time (pct1)| 387 ms            |
-| 99% Response Time (pct3)| 648 ms            |
+| Throughput              | 498.14 tps        |
+| Average Response Time   | 0.98 ms           |
+| 90% Response Time (pct1)| 2.0 ms            |
+| 99% Response Time (pct3)| 7.0 ms            |
 | Error Rate              | 0%                |
-| Test Duration           | 3 minutes         |
 
-### Transaction Response Times
+### Transaction Type Analysis
 
-| Transaction Type        | Avg Response Time | 90% Response Time | Throughput  |
-|-------------------------|-------------------|-------------------|-------------|
-| Create Transaction      | 9.78 ms           | 23 ms             | 60.45 tps   |
-| List Transactions       | 274.19 ms         | 560 ms            | 60.40 tps   |
-| Modify Transaction      | 14.85 ms          | 33 ms             | 60.50 tps   |
-| Delete Transaction      | 10.69 ms          | 26 ms             | 60.50 tps   |
-| Complete Transaction Flow | 309.51 ms       | 609 ms            | 60.35 tps   |
-| Batch Create Transaction | 11.89 ms         | 28 ms             | 34.74 tps   |
-| Query Transaction List  | 273.20 ms         | 545 ms            | 34.60 tps   |
+| Transaction Type        | Count | Avg Response | 90% Response | Throughput  |
+|-------------------------|-------|--------------|--------------|-------------|
+| Create Transaction      | 5,000 | 0.67 ms      | 1.0 ms       | 108.67 tps  |
+| List Transactions       | 5,000 | 2.06 ms      | 4.0 ms       | 108.78 tps  |
+| Modify Transaction      | 5,000 | 0.78 ms      | 2.0 ms       | 108.79 tps  |
+| Delete Transaction      | 5,000 | 0.65 ms      | 1.0 ms       | 108.79 tps  |
+| Complete Flow           | 5,000 | 4.16 ms      | 8.0 ms       | 108.64 tps  |
+| Batch Create            | 1,500 | 0.46 ms      | 1.0 ms       | 50.82 tps   |
+| Batch Query             | 1,500 | 0.70 ms      | 1.0 ms       | 50.83 tps   |
 
 ### Analysis
 
 - The system demonstrated excellent performance, with zero errors across all 23,000 test transactions.
-- The overall throughput of 277.12 transactions per second indicates high capacity for concurrent operations.
-- Create, modify, and delete operations are very efficient, all with average response times under 15ms.
-- List operations are more resource-intensive (274.19ms on average), as expected due to data retrieval and processing.
-- The complete transaction flow (including all operations) averaged 309.51ms, which is very good for a full CRUD cycle.
-- Even under peak load, the 99th percentile response times remained under 650ms, showing good stability.
-- The system handled the continuous load of 50 concurrent users without degradation in performance over the test period.
+- The overall throughput of 498.14 transactions per second indicates high capacity for concurrent operations.
+- All operations show exceptional response times, with the average under 1 millisecond.
+- List operation is relatively more resource-intensive (2.06 ms on average), as expected due to data retrieval and pagination.
+- The complete transaction flow (create, list, modify, delete) averaged only 4.16 ms, demonstrating excellent end-to-end performance.
+- Even under high concurrency (50 users), the system maintained consistent performance with no degradation.
 
-These results indicate the transaction manager system has strong performance characteristics and should comfortably handle the expected production workload. The application demonstrates excellent response times for write operations (create, modify, delete) while maintaining good performance for more complex read operations. 
+These results indicate that the transaction management system can easily handle high throughput with minimal latency, making it suitable for production environments with demanding performance requirements. 

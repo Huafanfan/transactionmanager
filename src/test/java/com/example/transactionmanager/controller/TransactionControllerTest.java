@@ -72,7 +72,6 @@ public class TransactionControllerTest {
 
     @Test
     public void testModifyTransaction() {
-        Transaction existingTransaction = new Transaction("1", "Shopping", 150.0);
         Transaction modifiedTransaction = new Transaction("1", "Shopping - Updated", 200.0);
         when(transactionService.modifyTransaction("1", modifiedTransaction)).thenReturn(modifiedTransaction);
 

@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: transaction-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-manager
+  namespace: transaction-manager
+  labels:
+    app: transaction-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transaction-manager
+  template:
+    metadata:
+      labels:
+        app: transaction-manager
+    spec:
+      containers:
+      - name: transaction-manager
+        image: transaction-manager:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-manager
+  namespace: transaction-manager
+  labels:
+    app: transaction-manager
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: transaction-manager 

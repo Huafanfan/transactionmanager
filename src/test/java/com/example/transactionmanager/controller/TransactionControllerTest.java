@@ -2,112 +2,180 @@ package com.example.transactionmanager.controller;
 
 import com.example.transactionmanager.model.Transaction;
 import com.example.transactionmanager.service.TransactionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(TransactionController.class)
 public class TransactionControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private TransactionService transactionService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private TransactionController transactionController;
 
-    @Test
-    public void testCreateTransaction() throws Exception {
-        Transaction transaction = new Transaction("1", "购物", 150.0);
-        when(transactionService.createTransaction(any(Transaction.class))).thenReturn(transaction);
-
-        mockMvc.perform(post("/transactions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transaction)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.description").value("购物"))
-                .andExpect(jsonPath("$.amount").value(150.0));
-
-        verify(transactionService).createTransaction(any(Transaction.class));
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testDeleteTransaction() throws Exception {
-        Transaction transaction = new Transaction("1", "购物", 150.0);
+    public void testCreateTransaction() {
+        Transaction transaction = new Transaction("1", "Shopping", 150.0);
+        when(transactionService.createTransaction(any(Transaction.class))).thenReturn(transaction);
+
+        Transaction result = transactionController.createTransaction(transaction);
+        assertNotNull(result);
+        assertEquals("1", result.getId());
+        assertEquals("Shopping", result.getDescription());
+        assertEquals(150.0, result.getAmount());
+
+        verify(transactionService).createTransaction(transaction);
+    }
+
+    @Test
+    public void testDeleteTransaction() {
+        Transaction transaction = new Transaction("1", "Shopping", 150.0);
         when(transactionService.deleteTransaction("1")).thenReturn(Optional.of(transaction));
 
-        mockMvc.perform(delete("/transactions/1"))
-                .andExpect(status().isOk());
+        ResponseEntity<Transaction> response = transactionController.deleteTransaction("1");
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(transaction, response.getBody());
 
         verify(transactionService).deleteTransaction("1");
     }
 
     @Test
-    public void testDeleteTransactionNotFound() throws Exception {
-        when(transactionService.deleteTransaction("999")).thenReturn(Optional.empty());
+    public void testDeleteNonExistentTransaction() {
+        when(transactionService.deleteTransaction("1")).thenReturn(Optional.empty());
 
-        mockMvc.perform(delete("/transactions/999"))
-                .andExpect(status().isNotFound());
+        ResponseEntity<Transaction> response = transactionController.deleteTransaction("1");
+        assertNotNull(response);
+        assertEquals(404, response.getStatusCodeValue());
+        assertNull(response.getBody());
 
-        verify(transactionService).deleteTransaction("999");
+        verify(transactionService).deleteTransaction("1");
     }
 
     @Test
-    public void testModifyTransaction() throws Exception {
-        Transaction modifiedTransaction = new Transaction("1", "购物 - 更新", 200.0);
-        when(transactionService.modifyTransaction(eq("1"), any(Transaction.class))).thenReturn(modifiedTransaction);
+    public void testModifyTransaction() {
+        Transaction existingTransaction = new Transaction("1", "Shopping", 150.0);
+        Transaction modifiedTransaction = new Transaction("1", "Shopping - Updated", 200.0);
+        when(transactionService.modifyTransaction("1", modifiedTransaction)).thenReturn(modifiedTransaction);
 
-        mockMvc.perform(put("/transactions/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(modifiedTransaction)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.description").value("购物 - 更新"))
-                .andExpect(jsonPath("$.amount").value(200.0));
+        ResponseEntity<Transaction> response = transactionController.modifyTransaction("1", modifiedTransaction);
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(modifiedTransaction, response.getBody());
 
-        verify(transactionService).modifyTransaction(eq("1"), any(Transaction.class));
+        verify(transactionService).modifyTransaction("1", modifiedTransaction);
     }
 
     @Test
-    public void testModifyTransactionNotFound() throws Exception {
-        when(transactionService.modifyTransaction(eq("999"), any(Transaction.class))).thenReturn(null);
+    public void testModifyNonExistentTransaction() {
+        Transaction modifiedTransaction = new Transaction("1", "Shopping - Updated", 200.0);
+        when(transactionService.modifyTransaction("1", modifiedTransaction)).thenReturn(null);
 
-        mockMvc.perform(put("/transactions/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new Transaction())))
-                .andExpect(status().isNotFound());
+        ResponseEntity<Transaction> response = transactionController.modifyTransaction("1", modifiedTransaction);
+        assertNotNull(response);
+        assertEquals(404, response.getStatusCodeValue());
+        assertNull(response.getBody());
 
-        verify(transactionService).modifyTransaction(eq("999"), any(Transaction.class));
+        verify(transactionService).modifyTransaction("1", modifiedTransaction);
     }
 
     @Test
-    public void testListTransactions() throws Exception {
-        List<Transaction> transactions = Arrays.asList(
-                new Transaction("1", "购物", 150.0),
-                new Transaction("2", "吃饭", 100.0)
-        );
-        when(transactionService.listTransactions()).thenReturn(transactions);
+    public void testListTransactionsWithPagination() {
+        // Prepare mock data
+        List<Transaction> mockTransactions = new ArrayList<>();
+        for (int i = 1; i <= 15; i++) {
+            mockTransactions.add(new Transaction(String.valueOf(i), "Transaction " + i, i * 10.0));
+        }
 
-        mockMvc.perform(get("/transactions"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("1"))
-                .andExpect(jsonPath("$[1].id").value("2"));
+        // Mock service behavior
+        when(transactionService.listTransactions(0, 10)).thenReturn(mockTransactions.subList(0, 10));
+        when(transactionService.getTotalTransactions()).thenReturn(15L);
 
-        verify(transactionService).listTransactions();
+        // Test first page
+        ResponseEntity<Map<String, Object>> response = transactionController.listTransactions(0, 10);
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+
+        Map<String, Object> responseBody = response.getBody();
+        assertNotNull(responseBody);
+        
+        @SuppressWarnings("unchecked")
+        List<Transaction> transactions = (List<Transaction>) responseBody.get("transactions");
+        assertEquals(10, transactions.size());
+        assertEquals(0, responseBody.get("currentPage"));
+        assertEquals(15L, responseBody.get("totalItems"));
+        assertEquals(2L, responseBody.get("totalPages"));
+
+        // Verify service calls
+        verify(transactionService).listTransactions(0, 10);
+        verify(transactionService).getTotalTransactions();
+    }
+
+    @Test
+    public void testListTransactionsEmptyResult() {
+        // Mock empty result
+        when(transactionService.listTransactions(anyInt(), anyInt())).thenReturn(new ArrayList<>());
+        when(transactionService.getTotalTransactions()).thenReturn(0L);
+
+        // Test empty result
+        ResponseEntity<Map<String, Object>> response = transactionController.listTransactions(0, 10);
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+
+        Map<String, Object> responseBody = response.getBody();
+        assertNotNull(responseBody);
+        
+        @SuppressWarnings("unchecked")
+        List<Transaction> transactions = (List<Transaction>) responseBody.get("transactions");
+        assertTrue(transactions.isEmpty());
+        assertEquals(0, responseBody.get("currentPage"));
+        assertEquals(0L, responseBody.get("totalItems"));
+        assertEquals(0L, responseBody.get("totalPages"));
+    }
+
+    @Test
+    public void testListTransactionsLastPage() {
+        // Prepare mock data for last page
+        List<Transaction> mockTransactions = new ArrayList<>();
+        for (int i = 11; i <= 15; i++) {
+            mockTransactions.add(new Transaction(String.valueOf(i), "Transaction " + i, i * 10.0));
+        }
+
+        // Mock service behavior
+        when(transactionService.listTransactions(1, 10)).thenReturn(mockTransactions);
+        when(transactionService.getTotalTransactions()).thenReturn(15L);
+
+        // Test last page
+        ResponseEntity<Map<String, Object>> response = transactionController.listTransactions(1, 10);
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+
+        Map<String, Object> responseBody = response.getBody();
+        assertNotNull(responseBody);
+        
+        @SuppressWarnings("unchecked")
+        List<Transaction> transactions = (List<Transaction>) responseBody.get("transactions");
+        assertEquals(5, transactions.size());
+        assertEquals(1, responseBody.get("currentPage"));
+        assertEquals(15L, responseBody.get("totalItems"));
+        assertEquals(2L, responseBody.get("totalPages"));
     }
 }

@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/transactions")
@@ -36,7 +38,18 @@ public class TransactionController {
     }
 
     @GetMapping
-    public List<Transaction> listTransactions() {
-        return transactionService.listTransactions();
+    public ResponseEntity<Map<String, Object>> listTransactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<Transaction> transactions = transactionService.listTransactions(page, size);
+        long total = transactionService.getTotalTransactions();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("transactions", transactions);
+        response.put("currentPage", page);
+        response.put("totalItems", total);
+        response.put("totalPages", (total + size - 1) / size);
+        
+        return ResponseEntity.ok(response);
     }
 }

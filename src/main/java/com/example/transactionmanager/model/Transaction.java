@@ -7,18 +7,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "交易数据模型")
+@Schema(description = "Transaction data model")
 public class Transaction {
-    @Schema(description = "交易ID", example = "1234-5678-90ab-cdef", required = true)
+    @Schema(description = "Transaction ID", example = "1234-5678-90ab-cdef", required = true)
     @NotBlank(message = "Transaction ID cannot be blank")
     private String id;
     
-    @Schema(description = "交易描述", example = "购买苹果手机", required = true)
+    @Schema(description = "Transaction description", example = "Purchase of Apple iPhone", required = true)
     @NotBlank(message = "Description cannot be blank")
     @Size(min = 1, max = 255, message = "Description must be between 1 and 255 characters")
     private String description;
     
-    @Schema(description = "交易金额", example = "1299.99", minimum = "0")
+    @Schema(description = "Transaction amount", example = "1299.99", minimum = "0")
     @NotNull(message = "Amount cannot be null")
     @PositiveOrZero(message = "Amount cannot be negative")
     private double amount;

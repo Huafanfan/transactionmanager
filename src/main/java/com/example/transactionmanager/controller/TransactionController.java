@@ -22,32 +22,32 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/transactions")
-@Tag(name = "交易管理", description = "交易管理系统的API接口")
+@Tag(name = "Transaction Management", description = "Transaction Management System API") 
 public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
 
     @PostMapping
-    @Operation(summary = "创建新交易", description = "创建一个新的交易记录")
+    @Operation(summary = "Create New Transaction", description = "Create a new transaction record")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "成功创建交易", 
+        @ApiResponse(responseCode = "200", description = "Successfully created transaction", 
                     content = @Content(schema = @Schema(implementation = Transaction.class))),
-        @ApiResponse(responseCode = "400", description = "无效的请求参数")
+        @ApiResponse(responseCode = "400", description = "Invalid request parameters")
     })
     public Transaction createTransaction(@Valid @RequestBody Transaction transaction) {
         return transactionService.createTransaction(transaction);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "删除交易", description = "根据ID删除交易记录")
+    @Operation(summary = "Delete Transaction", description = "Delete a transaction record by ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "成功删除交易", 
+        @ApiResponse(responseCode = "200", description = "Successfully deleted transaction", 
                     content = @Content(schema = @Schema(implementation = Transaction.class))),
-        @ApiResponse(responseCode = "404", description = "交易不存在")
+        @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
     public ResponseEntity<Transaction> deleteTransaction(
-            @Parameter(description = "交易ID", required = true) 
+            @Parameter(description = "Transaction ID", required = true) 
             @PathVariable String id) {
         Optional<Transaction> transaction = transactionService.deleteTransaction(id);
         return transaction.map(ResponseEntity::ok)
@@ -55,15 +55,15 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "修改交易", description = "根据ID修改交易记录")
+    @Operation(summary = "Modify Transaction", description = "Modify a transaction record by ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "成功修改交易", 
+        @ApiResponse(responseCode = "200", description = "Successfully modified transaction", 
                     content = @Content(schema = @Schema(implementation = Transaction.class))),
-        @ApiResponse(responseCode = "404", description = "交易不存在"),
-        @ApiResponse(responseCode = "400", description = "无效的请求参数")
+        @ApiResponse(responseCode = "404", description = "Transaction not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request parameters")
     })
     public ResponseEntity<Transaction> modifyTransaction(
-            @Parameter(description = "交易ID", required = true) 
+            @Parameter(description = "Transaction ID", required = true) 
             @PathVariable String id, 
             @Valid @RequestBody Transaction transaction) {
         Transaction modifiedTransaction = transactionService.modifyTransaction(id, transaction);
@@ -71,15 +71,15 @@ public class TransactionController {
     }
 
     @GetMapping
-    @Operation(summary = "查询交易列表", description = "分页查询交易记录")
+    @Operation(summary = "Query Transaction List", description = "Query transaction records in pages")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "成功获取交易列表", 
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved transaction list", 
                     content = @Content(schema = @Schema(implementation = Map.class)))
     })
     public ResponseEntity<Map<String, Object>> listTransactions(
-            @Parameter(description = "页码(从0开始)") 
+            @Parameter(description = "Page number (starting from 0)") 
             @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "每页大小") 
+            @Parameter(description = "Page size") 
             @RequestParam(defaultValue = "10") int size) {
         List<Transaction> transactions = transactionService.listTransactions(page, size);
         long total = transactionService.getTotalTransactions();
